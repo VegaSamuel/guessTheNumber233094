@@ -1,47 +1,87 @@
 package samuel.vega.guessthenumber
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import samuel.vega.guessthenumber.ui.theme.GuessTheNumberTheme
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import kotlin.random.Random
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    var minValue = 0
+    var maxValue = 100
+    var num: Int = 0
+    var won = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            GuessTheNumberTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+        setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        val guessings: TextView = findViewById(R.id.guessings)
+        val down: Button = findViewById(R.id.down)
+        val up: Button = findViewById(R.id.up)
+        val generate: Button = findViewById(R.id.generate)
+        val guessed: TextView = findViewById(R.id.guessed)
+
+        generate.setOnClickListener {
+            num = Random.nextInt(minValue, maxValue)
+            guessings.setText(num.toString())
+            generate.visibility = View.INVISIBLE
+            generate.visibility = View.VISIBLE
+        }
+
+        up.setOnClickListener {
+            minValue = num
+            if (checkingLimits()) {
+                num = Random.nextInt(minValue, maxValue)
+                guessings.setText(num.toString())
+            } else {
+                guessings.setText("Can't believe it :( You won")
+            }
+        }
+
+        down.setOnClickListener {
+            maxValue = num
+            if (checkingLimits()) {
+                num = Random.nextInt(minValue, maxValue)
+                guessings.setText(num.toString())
+            } else {
+                guessings.setText("Can't believe it :( You won")
+            }
+        }
+
+        guessed.setOnClickListener {
+            if (!won) {
+                guessings.setText("I guessed it, your number is " + num)
+                guessed.setText("Play again?")
+                won = true
+            } else {
+                generate.visibility = View.VISIBLE
+                guessings.setText("Tap on generate to start")
+                guessed.visibility = View.GONE
+                resetValues()
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GuessTheNumberTheme {
-        Greeting("Android")
+    fun resetValues() {
+        minValue = 0
+        maxValue = 100
+        num = 0
+        won = false
     }
+
+    fun checkingLimits(): Boolean {
+        return minValue != maxValue
+    }
+
 }
